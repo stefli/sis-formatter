@@ -21,8 +21,9 @@ export function activate(context: vscode.ExtensionContext) {
                 // Format the entire XML
                 const formattedXml = xmlFormatter(text, {
                     indentation: '    ',
-                    collapseContent: true,
-                    lineSeparator: '\n'
+                    collapseContent: false,
+                    lineSeparator: '\r\n',
+                    whiteSpaceAtEndOfSelfclosingTag: true
                 });
 
                 const range = new vscode.Range(
