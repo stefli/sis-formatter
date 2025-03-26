@@ -1,8 +1,13 @@
 {
   "name": "sis-formatter",
   "displayName": "SIS Formatter",
-  "description": "Special xml formatter for xml files",
-  "version": "0.0.1",
+  "description": "Special XML formatter for SIS XML files with script and style content formatting support",
+  "version": "1.0.0",
+  "publisher": "sis-team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefli/sis-formatter"
+  },
   "engines": {
     "vscode": "^1.98.0"
   },
@@ -33,7 +38,17 @@
       {
         "language": "xml"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "SIS Formatter",
+      "properties": {
+        "sisFormatter.scriptLikeNodes": {
+          "type": "array",
+          "default": ["Script", "service-config"],
+          "description": "List of node names that should be formatted like script content"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

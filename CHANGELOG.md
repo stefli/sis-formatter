@@ -1,9 +1,16 @@
 # Change Log
 
-All notable changes to the "sis-formatter" extension will be documented in this file.
+## [1.0.0] - 2024-01-10
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+### Added
+- XML格式化功能，支持自动格式化XML文件
+- 支持自定义格式化配置
+- 支持快捷键和右键菜单操作
 
-## [Unreleased]
+### Changed
+- 优化了格式化性能
+- 改进了代码结构和错误处理
 
-- Initial release
+### Fixed
+- 修复了特殊字符处理问题
+- 修复了缩进不一致的问题

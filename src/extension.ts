@@ -44,40 +44,125 @@ export function activate(context: vscode.ExtensionContext) {
                     for (let i = 0; i < styleNodes.length; i++) {
                         const styleNode = styleNodes[i];
                         const cssContent = styleNode.textContent || '';
-                        if (cssContent.trim()) {
+                        const trimmedContent = cssContent.trim();
+                        if (trimmedContent) {
                             try {
-                                const formattedCss = await prettier.format(cssContent.trim(), {
+                                // Calculate the indentation level for the script content
+                                let indentLevel = 0;
+                                let parentNode = styleNode.parentNode;
+                                while (parentNode && parentNode !== xmlDoc) {
+                                    indentLevel++;
+                                    parentNode = parentNode.parentNode;
+                                }
+                                const baseIndent = '    '.repeat(indentLevel + 1);
+
+                                const formattedCss = await prettier.format(trimmedContent, {
                                     parser: 'css',
                                     tabWidth: 4
                                 });
-                                styleNode.textContent = `\n${formattedCss}`;
+                                // Add indentation to each line
+                                const indentedJs = formattedCss
+                                .split('\n')
+                                .map(line => line.trim() ? baseIndent + line : line)
+                                .join('\n');
+
+                                styleNode.textContent = `\n${indentedJs}`;
                             } catch (error) {
-                                styleNode.textContent = `\n${cssContent}`;
+                                // Calculate the indentation level for the script content
+                                let indentLevel = 0;
+                                let parentNode = styleNode.parentNode;
+                                while (parentNode && parentNode !== xmlDoc) {
+                                    indentLevel++;
+                                    parentNode = parentNode.parentNode;
+                                }
+                                const baseIndent = '    '.repeat(indentLevel);
+                                const contentIndent = '    '.repeat(indentLevel + 1);
+
+                                // Add indentation to each line
+                                const indentedContent = trimmedContent
+                                    .split('\n')
+                                    .map(line => line.trim() ? contentIndent + line : line)
+                                    .join('\n');
+                                styleNode.textContent = `\n${indentedContent}`;
                             }
                         }
                     }
                 }
 
-                // Format Script nodes (JavaScript content)
-                const scriptNodes = xmlDoc.getElementsByTagName('Script');
-                if (scriptNodes && scriptNodes.length > 0) {
-                    for (let i = 0; i < scriptNodes.length; i++) {
-                        const scriptNode = scriptNodes[i];
-                        const content = scriptNode.textContent || '';
-                        const trimmedContent = content.trim();
+                // Get user configured script-like nodes
+                const config = vscode.workspace.getConfiguration('sisFormatter');
+                const scriptLikeNodes = config.get<string[]>('scriptLikeNodes') || ['Script', 'service-config'];
 
-                        if (trimmedContent) {
-                            try {
-                                const formattedJs = await prettier.format(trimmedContent, {
-                                    parser: 'babel-ts',
-                                    tabWidth: 4,
-                                    printWidth: 120,
-                                    bracketSameLine: true,
-                                    singleAttributePerLine: false
-                                });
-                                scriptNode.textContent = `\n${formattedJs}`;
-                            } catch (error) {
-                                scriptNode.textContent = `\n${trimmedContent}`;
+                // Format script-like nodes (JavaScript content)
+                for (const nodeName of scriptLikeNodes) {
+                    const nodes = xmlDoc.getElementsByTagName(nodeName);
+                    if (nodes && nodes.length > 0) {
+                        for (let i = 0; i < nodes.length; i++) {
+                            const node = nodes[i];
+                            const content = node.textContent || '';
+                            const trimmedContent = content.trim();
+
+                            if (trimmedContent) {
+                                try {
+                                    // Calculate the indentation level for the script content
+                                    let indentLevel = 0;
+                                    let parentNode = node.parentNode;
+                                    while (parentNode && parentNode !== xmlDoc) {
+                                        indentLevel++;
+                                        parentNode = parentNode.parentNode;
+                                    }
+                                    const baseIndent = '    '.repeat(indentLevel + 1);
+
+                                    const formattedJs = await prettier.format(trimmedContent, {
+                                        parser: 'babel-ts',
+                                        tabWidth: 4,
+                                        printWidth: 120,
+                                        bracketSameLine: true,
+                                        singleAttributePerLine: false
+                                    });
+
+                                    // Add indentation to each line
+                                    const indentedJs = formattedJs
+                                        .split('\n')
+                                        .map(line => line.trim() ? baseIndent + line : line)
+                                        .join('\n');
+
+                                    // Create a CDATA section with proper indentation
+                                    const cdataSection = xmlDoc.createCDATASection(`\n${baseIndent}${indentedJs}\n${baseIndent}`);
+                                    // Remove all child nodes
+                                    while (node.firstChild) {
+                                        node.removeChild(node.firstChild);
+                                    }
+
+                                    // Append the CDATA section
+                                    node.appendChild(xmlDoc.createTextNode(`\n${baseIndent}`));
+                                    node.appendChild(cdataSection);
+                                    node.appendChild(xmlDoc.createTextNode(`\n${baseIndent}`));
+                                } catch (error) {
+                                    // Calculate the indentation level for the script content
+                                    let indentLevel = 0;
+                                    let parentNode = node.parentNode;
+                                    while (parentNode && parentNode !== xmlDoc) {
+                                        indentLevel++;
+                                        parentNode = parentNode.parentNode;
+                                    }
+                                    const baseIndent = '    '.repeat(indentLevel);
+                                    const contentIndent = '    '.repeat(indentLevel + 1);
+
+                                    // Add indentation to each line
+                                    const indentedContent = trimmedContent
+                                        .split('\n')
+                                        .map(line => line.trim() ? contentIndent + line : line)
+                                        .join('\n');
+
+                                    const cdataSection = xmlDoc.createCDATASection(`\n${baseIndent}${indentedContent}\n${baseIndent}`);
+                                    while (node.firstChild) {
+                                        node.removeChild(node.firstChild);
+                                    }
+                                    node.appendChild(xmlDoc.createTextNode(`\n${baseIndent}`));
+                                    node.appendChild(cdataSection);
+                                    node.appendChild(xmlDoc.createTextNode(`\n${baseIndent}`));
+                                }
                             }
                         }
                     }
@@ -93,7 +178,7 @@ export function activate(context: vscode.ExtensionContext) {
                     forceSelfClosingEmptyTag: true,
                     whiteSpaceAtEndOfSelfclosingTag: true,
                     throwOnFailure: true,
-                    ignoredPaths: ['Style', 'Script']
+                    ignoredPaths: ['Style', ...scriptLikeNodes]
                 });
                 const range = new vscode.Range(
                     document.positionAt(0),
@@ -106,7 +191,7 @@ export function activate(context: vscode.ExtensionContext) {
                 return [];
             }
         }
-        
+
     });
 
     context.subscriptions.push(disposable);
