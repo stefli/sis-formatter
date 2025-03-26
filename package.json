@@ -15,14 +15,23 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "languages": [{
-      "id": "xml",
-      "extensions": [".xml"]
-    }],
+    "languages": [
+      {
+        "id": "xml",
+        "extensions": [
+          ".xml"
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "sis-formatter.formatXml",
         "title": "Format XML (SIS)"
+      }
+    ],
+    "formatters": [
+      {
+        "language": "xml"
       }
     ]
   },
@@ -33,13 +42,14 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@xmldom/xmldom": "^0.8.10",
     "prettier": "^3.2.5",
-    "xml-formatter": "^3.6.2",
-    "@xmldom/xmldom": "^0.8.10"
+    "xml-formatter": "^3.6.2"
   },
   "devDependencies": {
-    "@types/vscode": "^1.98.0",
     "@types/node": "20.x",
+    "@types/vscode": "^1.98.0",
+    "@types/xml-formatter": "^2.1.1",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
     "eslint": "^9.21.0",
