@@ -8,8 +8,8 @@ const NODE_CONFIG = {
     cdataNodes: ['Script', 'service-config', 'Validation', 'Html'],
     formatterRules: {
         'Style': { parser: 'css', tabWidth: 4 },
-        'Script': { parser: 'babel', tabWidth: 4, printWidth: 100 },
-        'service-config': { parser: 'babel', tabWidth: 4, printWidth: 100 },
+        'Script': { parser: 'babel', tabWidth: 4, printWidth: 120 },
+        'service-config': { parser: 'babel', tabWidth: 4, printWidth: 120 },
         'Validation': { parser: 'json', tabWidth: 4 },
         'Html': { parser: 'html' }
     }
@@ -59,12 +59,22 @@ function calculateIndent(node: Element): string {
     return ' '.repeat(level * 4);
 }
 
-// 提取节点内容（区分CDATA和普通文本）
 function extractNodeContent(node: Element, nodeName: string): string {
+    // 1. 区分 CDATA 节点和普通节点
     if (NODE_CONFIG.cdataNodes.includes(nodeName)) {
+        // 2. 定位 CDATA 节点（XML CDATA 节点类型为 4）
         const cdata = Array.from(node.childNodes).find(n => n.nodeType === 4);
-        return cdata?.nodeValue?.trim() || '';
+        let content = cdata?.nodeValue?.trim() || '';
+
+        // 3. 替换 XML 注释为 JS 注释（针对 CDATA 内部内容）
+        content = content.replace(
+            /<!--\s*([\s\S]*?)\s*-->/g,
+            (match, p1) => p1.split('\n').map((line: string) => `// ${line.trim()}`).join('\n')
+        );
+
+        return content;
     }
+    // 4. 普通节点直接返回文本内容（保留原始 XML 注释）
     return node.textContent?.trim() || '';
 }
 
