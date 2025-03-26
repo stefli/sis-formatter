@@ -128,7 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
                                         .join('\n');
 
                                     // Create a CDATA section with proper indentation
-                                    const cdataSection = xmlDoc.createCDATASection(`\n${baseIndent}${indentedJs}\n${baseIndent}`);
+                                    const cdataSection = xmlDoc.createCDATASection(`\n${baseIndent}${indentedJs.trimStart()}${baseIndent}`);
                                     // Remove all child nodes
                                     while (node.firstChild) {
                                         node.removeChild(node.firstChild);
@@ -155,7 +155,7 @@ export function activate(context: vscode.ExtensionContext) {
                                         .map(line => line.trim() ? contentIndent + line : line)
                                         .join('\n');
 
-                                    const cdataSection = xmlDoc.createCDATASection(`\n${baseIndent}${indentedContent}\n${baseIndent}`);
+                                    const cdataSection = xmlDoc.createCDATASection(`\n${baseIndent}${indentedContent.trimStart()}${baseIndent}`);
                                     while (node.firstChild) {
                                         node.removeChild(node.firstChild);
                                     }
